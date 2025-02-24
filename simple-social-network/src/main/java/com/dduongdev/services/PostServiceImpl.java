@@ -1,28 +1,50 @@
 package com.dduongdev.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.dduongdev.dtos.EditPostRequest;
+import com.dduongdev.dtos.PostResponse;
 import com.dduongdev.entities.Post;
 import com.dduongdev.entities.PostApprovalStatus;
+import com.dduongdev.entities.User;
 import com.dduongdev.repositories.PostRepository;
+import com.dduongdev.repositories.UserRepository;
 
 @Service
 public class PostServiceImpl implements PostService {
 	private PostRepository postRepository;
+	private UserRepository userRepository;
 	
-	public PostServiceImpl(PostRepository postRepository) {
+	@Autowired
+	public PostServiceImpl(PostRepository postRepository,
+			UserRepository userRepository) {
 		this.postRepository = postRepository;
+		this.userRepository = userRepository;
 	}
 	
 	@Override
-	public List<Post> getLatestByFollowedUsersPaged(int userId, int pageIndex, int pageSize) {
-		return postRepository.findLatestByFollowedUsersPaged(userId, pageIndex, pageSize);
+	public List<PostResponse> getLatestApprovedByFollowingUsersPaged(int userId, int pageIndex, int pageSize) {
+		List<Post> latestApprovedPostsOfFollowingUsers =  postRepository.findLatestApprovedByFollowingUsersPaged(userId, pageIndex, pageSize);
+		List<User> followingUsers = userRepository.findAllFollowings(userId);
+		Map<Integer, User> followingUsersMap = followingUsers.stream().collect(Collectors.toMap(User::getId, user -> user));
+		return latestApprovedPostsOfFollowingUsers.stream()
+									.map(post -> new PostResponse(
+												post.getId(),
+												post.getTitle(),
+												post.getBody(),
+												post.getUserId(),
+												followingUsersMap.containsKey(post.getUserId()) ? followingUsersMap.get(post.getUserId()).getUsername() : "unknown",
+												post.getApprovalStatus(),
+												post.getCreatedAt()
+											)).toList();
 	}
 
 	@Override

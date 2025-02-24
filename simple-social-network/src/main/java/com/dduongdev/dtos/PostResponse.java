@@ -9,35 +9,35 @@ public class PostResponse {
 	private String title;
 	private String body;
 	private int userId;
+	private String username;
 	private PostApprovalStatus approvalStatus;
 	private LocalDateTime createdAt;
-	private boolean isMine;
 
-	public PostResponse() {
-		super();
-	}
-
-	public PostResponse(String title, String body, int userId, PostApprovalStatus approvalStatus,
-			LocalDateTime createdAt, boolean isMine) {
-		super();
-		this.title = title;
-		this.body = body;
-		this.userId = userId;
-		this.approvalStatus = approvalStatus;
-		this.createdAt = createdAt;
-		this.isMine = isMine;
-	}
-
-	public PostResponse(int id, String title, String body, int userId, PostApprovalStatus approvalStatus,
-			LocalDateTime createdAt, boolean isMine) {
+	public PostResponse(int id, String title, String body, int userId, String username,
+			PostApprovalStatus approvalStatus, LocalDateTime createdAt) {
 		super();
 		this.id = id;
 		this.title = title;
 		this.body = body;
 		this.userId = userId;
+		this.username = username;
 		this.approvalStatus = approvalStatus;
 		this.createdAt = createdAt;
-		this.isMine = isMine;
+	}
+
+	public PostResponse(String title, String body, int userId, String username, PostApprovalStatus approvalStatus,
+			LocalDateTime createdAt) {
+		super();
+		this.title = title;
+		this.body = body;
+		this.userId = userId;
+		this.username = username;
+		this.approvalStatus = approvalStatus;
+		this.createdAt = createdAt;
+	}
+
+	public PostResponse() {
+		super();
 	}
 
 	public int getId() {
@@ -72,6 +72,14 @@ public class PostResponse {
 		this.userId = userId;
 	}
 
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public PostApprovalStatus getApprovalStatus() {
 		return approvalStatus;
 	}
@@ -88,11 +96,4 @@ public class PostResponse {
 		this.createdAt = createdAt;
 	}
 
-	public boolean isMine() {
-		return isMine;
-	}
-
-	public void setMine(boolean isMine) {
-		this.isMine = isMine;
-	}
 }

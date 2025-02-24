@@ -2,130 +2,223 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ - Bài viết</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trang Home - Infinite Scroll</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
-            background-color: #000; 
-            color: #e6e6e6; 
-            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
         }
-        .post-container {
-            max-width: 600px;
-            margin: auto;
+        .container {
+            max-width: 1200px;
         }
-        .post {
-            border-bottom: 1px solid #333;
-            padding: 15px;
+        .card {
+            background-color: #1e1e1e;
+            border: none;
+            color: white;
         }
-        .post-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
+        .btn-unfollow {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-follow {
+            background-color: #28a745;
+            color: white;
         }
         .post-body {
-            font-size: 15px;
-            color: #bbb;
+            white-space: pre-line;
         }
-        .loading-spinner {
-            text-align: center;
-            margin: 20px 0;
+        .post-meta {
+            color: #bbb; /* Màu xám nhạt để nổi bật trên nền đen */
+            font-size: 14px;
+            margin-bottom: 5px;
         }
-        .loading-spinner .spinner-border {
-            width: 2rem;
-            height: 2rem;
-            color: #1DA1F2; /* Màu xanh đặc trưng của X (Twitter) */
-        }
+
     </style>
 </head>
 <body>
 
-    <div class="container mt-4 post-container">
-        <h3 class="text-center text-light">Bài viết mới nhất</h3>
-
-        <div id="post-list">
-            <!-- Bài viết sẽ được load vào đây -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Cột trái: Danh sách người dùng đã theo dõi -->
+        <div class="col-md-3">
+            <h4>Đang theo dõi</h4>
+            <div id="following-users"></div>
         </div>
 
-        <div class="loading-spinner" id="loading">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-            </div>
+        <!-- Cột giữa: Danh sách bài viết -->
+        <div class="col-md-6">
+            <h4>Bài viết mới nhất</h4>
+            <div id="posts"></div>
+        </div>
+
+        <!-- Cột phải: Danh sách người dùng chưa theo dõi -->
+        <div class="col-md-3">
+            <h4>Gợi ý theo dõi</h4>
+            <div id="not-followed-users"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        let page = 0;
-        let size = 20;
-        let isLoading = false;
-        let lastPostId = null;
+<script>
+    if (!localStorage.getItem('authToken')) {
+        window.location.href = "/signin.html"; // Chuyển hướng đến trang đăng nhập
+    }
+</script>
 
-        function loadPosts() {
-            if (isLoading) return;
-            isLoading = true;
-            $("#loading").show();
+<script>
+    let followingPage = 0;
+    let postPage = 0;
+    let notFollowedPage = 0;
+    const pageSize = 20;
 
-            let access_token = localStorage.getItem("access_token");
+    function getAuthHeaders() {
+        const token = localStorage.getItem('access_token');
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
 
-            $.ajax({
-                url: `http://localhost:8080/simple-social-network/api/posts/followed/paged?pageIndex=${page}&pageSize=${size}`,
-                type: "GET",
-                headers: {
-                    "Authorization": `Bearer ${access_token}`
-                },
-                success: function (posts) {
-                    if (posts.length > 0) {
-                        posts.forEach(post => {
-                            $("#post-list").append(`
-                                <div class="post">
-                                    <div class="post-title">${post.title}</div>
-                                    <div class="post-body">${post.body}</div>
-                                    <small class="text-muted">${formatDate(post.createdAt)}</small>
-                                </div>
-                            `);
-                        });
+    function loadFollowingUsers() {
+        $.ajax({
+            url: `http://localhost:8080/simple-social-network/api/users/following?pageIndex=${followingPage}&pageSize=${pageSize}`,
+            method: 'GET',
+            headers: getAuthHeaders(),
+            success: function(data) {
+                let html = '';
+                data.forEach(user => {
+                    html += `
+                        <div class="card mb-2 p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><strong>@${user.username}</strong></span>
+                                <button class="btn btn-sm btn-unfollow" onclick="unfollowUser(${user.userId})">Hủy</button>
+                            </div>
+                        </div>`;
+                });
+                $('#following-users').append(html);
+                followingPage++;
+                isLoading = false;
+            }
+        });
+    }
 
-                        lastPostId = posts[posts.length - 1].id;
-                        page++;
-                    } else {
-                        $(window).off("scroll"); // Ngừng cuộn nếu hết bài viết
-                    }
+    function loadPosts() {
+        $.ajax({
+            url: `http://localhost:8080/simple-social-network/api/posts/followed?pageIndex=${postPage}&pageSize=${pageSize}`,
+            method: 'GET',
+            headers: getAuthHeaders(),
+            success: function(data) {
+                console.log(data);
+                let html = '';
+                data.forEach(post => {
+                    let createdAt = new Date(...post.createdAt)
+                                .toLocaleString('en-US', { 
+                                    month: 'short', day: '2-digit', year: 'numeric',
+                                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                                    hour12: false
+                                }).replace(',', '');
 
-                    isLoading = false;
-                    $("#loading").hide();
-                },
-                error: function (xhr) {
-                    console.error("Lỗi tải bài viết", xhr);
-                    isLoading = false;
-                    $("#loading").hide();
+                    html += `
+                        <div class="card mb-3 p-3">
+                            <div class="post-meta"><strong>@${post.username} · ${createdAt}</strong></div>
+                            <h5>${post.title}</h5>
+                            <p class="post-body">${post.body}</p>
+                        </div>`;
+                });
+                $('#posts').append(html);
+                postPage++;
+                isLoading = false;
+            }
+        });
+    }
 
-                    if (xhr.status === 401) {
-                        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-                        window.location.href = "/signin.html";
-                    }
-                }
-            });
-        }
+    function loadNotFollowedUsers() {
+        $.ajax({
+            url: `http://localhost:8080/simple-social-network/api/users/not-followed?pageIndex=${notFollowedPage}&pageSize=${pageSize}`,
+            method: 'GET',
+            headers: getAuthHeaders(),
+            success: function(data) {
+                let html = '';
+                data.forEach(user => {
+                    html += `
+                        <div class="card mb-2 p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><strong>@${user.username}</strong></span>
+                                <button class="btn btn-sm btn-follow" onclick="followUser(${user.userId})">Theo dõi</button>
+                            </div>
+                        </div>`;
+                });
+                $('#not-followed-users').append(html);
+                notFollowedPage++;
+                isLoading = false;
+            }
+        });
+    }
 
-        $(document).ready(function () {
-            loadPosts();
-
-            $(window).on("scroll", function () {
-                if (!isLoading && $(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
-                    loadPosts();
-                }
-            });
+    function unfollowUser(userId) {
+        $.ajax({
+            url: "http://localhost:8080/simple-social-network/api/users/unfollow",
+            method: "POST",
+            headers: getAuthHeaders(),
+            contentType: "application/json",
+            data: JSON.stringify({ targetUserId: userId }), // Gửi userId trong body
+            success: function () {
+                $("#following-users").empty();
+                followingPage = 0;
+                loadFollowingUsers();
+                loadNotFollowedUsers();
+            }
         });
 
-        function formatDate(createdAtArray) {
-            let [year, month, day, hour, minute, second] = createdAtArray;
-            let date = new Date(year, month - 1, day, hour, minute, second); // month - 1 vì JS tính từ 0
-            return date.toLocaleString("vi-VN"); // Format theo giờ Việt Nam
-        }
+        location.reload();
+    }
 
-    </script>
+    function followUser(userId) {
+        $.ajax({
+            url: "http://localhost:8080/simple-social-network/api/users/follow",
+            method: "POST",
+            headers: getAuthHeaders(),
+            contentType: "application/json",
+            data: JSON.stringify({ targetUserId: userId }), // Gửi userId trong body
+            success: function () {
+                $("#not-followed-users").empty();
+                notFollowedPage = 0;
+                loadFollowingUsers();
+                loadNotFollowedUsers();
+            }
+        });
+
+        location.reload();
+    }
+
+
+    $(document).ready(function() {
+        Promise.all([
+            loadFollowingUsers(),
+            loadPosts(),
+            loadNotFollowedUsers()
+        ]).then(() => console.log("Tất cả API đã hoàn tất"));
+
+        $(window).scroll(function() {
+            let scrollBottom = $(document).height() - $(window).height() - $(window).scrollTop();
+            if (scrollBottom < 300) {
+                loadPosts();
+            }
+        });
+
+        $('#following-users').on('scroll', function() {
+            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight - 50) {
+                loadFollowingUsers();
+            }
+        });
+
+        $('#not-followed-users').on('scroll', function() {
+            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight - 50) {
+                loadNotFollowedUsers();
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

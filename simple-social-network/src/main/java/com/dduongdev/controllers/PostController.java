@@ -37,25 +37,15 @@ public class PostController {
 		this.postService = postService;
 	}
 	
-	@GetMapping(value = "/followed/paged")
+	@GetMapping(value = "/followed")
 	public ResponseEntity<?> getLatestByFollowedUsersPaged(
 			@RequestParam("pageIndex") int pageIndex, 
 		 	@RequestParam("pageSize") int pageSize,
 		 	@AuthenticationPrincipal CustomUserDetails userDetails) {
 		try {
 			int userId = ((CustomUserDetails) userDetails).getUserId();
-			List<Post> posts = postService.getLatestByFollowedUsersPaged(userId, pageIndex, pageSize); 
+			List<PostResponse> responsePosts = postService.getLatestApprovedByFollowingUsersPaged(userId, pageIndex, pageSize);
 			
-			List<PostResponse> responsePosts = posts.stream()
-													.map(post -> new PostResponse(
-																post.getId(),
-																post.getTitle(),
-																post.getBody(),
-																post.getUserId(),
-																post.getApprovalStatus(),
-																post.getCreatedAt(),
-																post.getUserId() == userId
-															)).toList();
 			return ResponseEntity.ok(responsePosts);
 		} catch (Exception ex) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
