@@ -91,7 +91,7 @@ public class InMemoryDatabase {
         posts.add(new Post(49, "Sử dụng Git hiệu quả", "Hướng dẫn Git, GitHub cơ bản cho lập trình viên...", 9, PostApprovalStatus.APPROVED, LocalDateTime.now().minusDays(37)));
         posts.add(new Post(50, "Phát triển game với Unity", "Cách tạo game đơn giản bằng Unity...", 9, PostApprovalStatus.REJECTED, LocalDateTime.now().minusDays(36)));
 
-        userFollows.add(new UserFollow(2, 3, 7, LocalDateTime.now().minusDays(40)));  // Bob theo dõi DuongDev // DuongDev theo dõi Alice
-        userFollows.add(new UserFollow(4, 4, 2, LocalDateTime.now().minusDays(30)));  // Charlie theo dõi Alice
+        userFollows.add(new UserFollow(2, 3, 7, LocalDateTime.now().minusDays(40)));  
+        userFollows.add(new UserFollow(4, 4, 2, LocalDateTime.now().minusDays(30)));  
     }
 }
