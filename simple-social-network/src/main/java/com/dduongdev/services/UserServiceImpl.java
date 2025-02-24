@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void signup(User user) {
 		userRepository.findByUsername(user.getUsername())
-				.ifPresent(_ -> {
+				.ifPresent(existingUser -> {
 					throw new ResponseStatusException(HttpStatus.CONFLICT,
 							"User with username " + user.getUsername() + " is already exists.");
 				});
