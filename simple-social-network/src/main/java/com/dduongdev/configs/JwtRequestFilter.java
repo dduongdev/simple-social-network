@@ -37,7 +37,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		logger.info("JwtRequestFilter is running for: " + request.getRequestURI());
-		System.out.println("JwtRequestFilter is running for: " + request.getRequestURI());
+
 		Optional<String> jwtTokenOpt = jwtService.parseTokenFrom(request);
 		
 		if (jwtTokenOpt.isPresent() && jwtService.validateToken(jwtTokenOpt.get())) {

@@ -12,7 +12,8 @@ import com.dduongdev.entities.User;
 import com.dduongdev.entities.UserFollow;
 import com.dduongdev.repositories.UserRepository;
 
-@Repository
+//@Repository
+@SuppressWarnings("unused")
 public class InMemoryUserRepository implements UserRepository {
     @Override
     public Optional<User> findByUsername(String username) {

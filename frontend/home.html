@@ -44,19 +44,19 @@
     <div class="row">
         <!-- Cột trái: Danh sách người dùng đã theo dõi -->
         <div class="col-md-3">
-            <h4>Đang theo dõi</h4>
+            <h4>Followings</h4>
             <div id="following-users"></div>
         </div>
 
         <!-- Cột giữa: Danh sách bài viết -->
         <div class="col-md-6">
-            <h4>Bài viết mới nhất</h4>
+            <h4>Posts</h4>
             <div id="posts"></div>
         </div>
 
         <!-- Cột phải: Danh sách người dùng chưa theo dõi -->
         <div class="col-md-3">
-            <h4>Gợi ý theo dõi</h4>
+            <h4>Suggested</h4>
             <div id="not-followed-users"></div>
         </div>
     </div>
@@ -138,6 +138,7 @@
             headers: getAuthHeaders(),
             success: function(data) {
                 let html = '';
+                console.log(data);
                 data.forEach(user => {
                     html += `
                         <div class="card mb-2 p-2">
@@ -196,24 +197,38 @@
         loadPosts();
         loadNotFollowedUsers();
 
-        $(window).scroll(function() {
+        let isLoadingPosts = false;
+        let isLoadingFollowingUsers = false;
+        let isLoadingNotFollowedUsers = false;
+
+        $(window).scroll(function () {
             let scrollBottom = $(document).height() - $(window).height() - $(window).scrollTop();
-            if (scrollBottom < 300) {
-                loadPosts();
+            if (scrollBottom < 300 && !isLoadingPosts) {
+                isLoadingPosts = true;
+                loadPosts().then(() => {
+                    isLoadingPosts = false;
+                });
             }
         });
 
-        $('#following-users').on('scroll', function() {
-            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight - 50) {
-                loadFollowingUsers();
+        $('#following-users').on('scroll', function () {
+            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight - 50 && !isLoadingFollowingUsers) {
+                isLoadingFollowingUsers = true;
+                loadFollowingUsers().then(() => {
+                    isLoadingFollowingUsers = false;
+                });
             }
         });
 
-        $('#not-followed-users').on('scroll', function() {
-            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight - 50) {
-                loadNotFollowedUsers();
+        $('#not-followed-users').on('scroll', function () {
+            if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight - 50 && !isLoadingNotFollowedUsers) {
+                isLoadingNotFollowedUsers = true;
+                loadNotFollowedUsers().then(() => {
+                    isLoadingNotFollowedUsers = false;
+                });
             }
         });
+
     });
 </script>
 

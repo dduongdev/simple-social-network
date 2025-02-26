@@ -10,7 +10,8 @@ import com.dduongdev.entities.Post;
 import com.dduongdev.entities.PostApprovalStatus;
 import com.dduongdev.repositories.PostRepository;
 
-@Repository
+//@Repository
+@SuppressWarnings("unused") 
 public class InMemoryPostRepository implements PostRepository {
     
     @Override
