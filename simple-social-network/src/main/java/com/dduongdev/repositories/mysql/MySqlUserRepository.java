@@ -17,7 +17,7 @@ import com.dduongdev.entities.User;
 import com.dduongdev.entities.UserFollow;
 import com.dduongdev.entities.UserRole;
 import com.dduongdev.repositories.UserRepository;
-import com.dduongdev.utils.DbUtils;
+import com.dduongdev.utils.DatabaseConnectionPool;
 
 @Repository
 public class MySqlUserRepository implements UserRepository {
@@ -27,7 +27,7 @@ public class MySqlUserRepository implements UserRepository {
 	public Optional<User> findByUsername(String username) {
 	    String query = MySqlCommands.USER_FIND_BY_USERNAME;
 	    
-	    try (Connection conn = DbUtils.getInstance().getConnection();
+	    try (Connection conn = DatabaseConnectionPool.getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(query)) {
 	        
 	        stmt.setString(1, username);
@@ -54,7 +54,7 @@ public class MySqlUserRepository implements UserRepository {
 	@Override
 	public List<User> findAllFollowings(int followerUserId) {
 	    List<User> users = new ArrayList<>();
-	    try (Connection conn = DbUtils.getInstance().getConnection();
+	    try (Connection conn = DatabaseConnectionPool.getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(MySqlCommands.USER_FIND_ALL_FOLLOWINGS)) {
 
 	        stmt.setInt(1, followerUserId);
@@ -81,7 +81,7 @@ public class MySqlUserRepository implements UserRepository {
 	@Override
 	public List<User> getNotFollowedUsersPaged(int userId, int pageIndex, int pageSize) {
 	    List<User> users = new ArrayList<>();
-	    try (Connection conn = DbUtils.getInstance().getConnection();
+	    try (Connection conn = DatabaseConnectionPool.getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(MySqlCommands.USER_FIND_NOT_FOLLOWED_PAGED)) {
 
 	        stmt.setInt(1, userId);
@@ -111,7 +111,7 @@ public class MySqlUserRepository implements UserRepository {
 	@Override
 	public List<User> getFollowingUsersPaged(int userId, int pageIndex, int pageSize) {
 	    List<User> users = new ArrayList<>();
-	    try (Connection conn = DbUtils.getInstance().getConnection();
+	    try (Connection conn = DatabaseConnectionPool.getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(MySqlCommands.USER_FIND_FOLLOWINGS_PAGED)) {
 
 	        stmt.setInt(1, userId);
@@ -139,7 +139,7 @@ public class MySqlUserRepository implements UserRepository {
 
 	@Override
 	public void save(User user) {
-		try (Connection conn = DbUtils.getInstance().getConnection();
+		try (Connection conn = DatabaseConnectionPool.getConnection();
 				PreparedStatement stmt = conn.prepareStatement(MySqlCommands.USER_SAVE)) {
 			stmt.setString(1, user.getUsername());
 			stmt.setString(2, user.getPassword());
@@ -157,7 +157,7 @@ public class MySqlUserRepository implements UserRepository {
 
 	@Override
 	public void follow(UserFollow userFollow) {
-	    try (Connection conn = DbUtils.getInstance().getConnection();
+	    try (Connection conn = DatabaseConnectionPool.getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(MySqlCommands.USERFOLLOW_SAVE)) {
 
 	        stmt.setInt(1, userFollow.getFollowerId());
@@ -173,7 +173,7 @@ public class MySqlUserRepository implements UserRepository {
 
 	@Override
 	public void unfollow(int followerUserId, int followingUserId) {
-	    try (Connection conn = DbUtils.getInstance().getConnection();
+	    try (Connection conn = DatabaseConnectionPool.getConnection();
 	         PreparedStatement stmt = conn.prepareStatement(MySqlCommands.USERFOLLOW_DELETE)) {
 
 	        stmt.setInt(1, followerUserId);

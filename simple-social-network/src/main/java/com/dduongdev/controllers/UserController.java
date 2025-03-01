@@ -42,7 +42,7 @@ public class UserController {
 			userService.follow(userId, request.getTargetUserId());
 			return ResponseEntity.ok().build();
 		} catch (Exception ex) {
-			logger.error(ex.getStackTrace().toString());
+			logger.error(ex.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
 		}
 	}
@@ -55,6 +55,7 @@ public class UserController {
 			userService.unfollow(userId, request.getTargetUserId());
 			return ResponseEntity.ok().build();
 		} catch (Exception ex) {
+			logger.error(ex.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
 		}
 	}
@@ -68,7 +69,7 @@ public class UserController {
 					pageSize);
 			return ResponseEntity.ok(notFollowedUsersPaged);
 		} catch (Exception ex) {
-			logger.error(ex.getStackTrace().toString());
+			logger.error(ex.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
 		}
 	}
@@ -81,6 +82,7 @@ public class UserController {
 			List<UserResponse> followingUsersPaged = userService.getFollowingUsersPaged(userId, pageIndex, pageSize);
 			return ResponseEntity.ok(followingUsersPaged);
 		} catch (Exception ex) {
+			logger.error(ex.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
 		}
 	}

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import com.dduongdev.entities.Post;
 import com.dduongdev.entities.PostApprovalStatus;
 import com.dduongdev.repositories.PostRepository;
-import com.dduongdev.utils.DbUtils;
+import com.dduongdev.utils.DatabaseConnectionPool;
 
 @Repository
 public class MySqlPostRepository implements PostRepository {
@@ -24,7 +24,7 @@ public class MySqlPostRepository implements PostRepository {
 	@Override
 	public List<Post> findLatestApprovedByFollowingUsersPaged(int userId, int pageIndex, int pageSize) {
 		List<Post> posts = new ArrayList<>();
-		try (Connection conn = DbUtils.getInstance().getConnection();
+		try (Connection conn = DatabaseConnectionPool.getConnection();
 				PreparedStatement stmt = conn.prepareStatement(MySqlCommands.POST_FIND_LASTEST_APPROVED_BY_FOLLOWING_USERS_PAGED)) {
 			stmt.setInt(1, userId);
 			stmt.setInt(2, pageSize);
